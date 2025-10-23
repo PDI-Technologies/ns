@@ -13,10 +13,8 @@ import httpx
 from vendor_analysis.core.config import Settings
 from vendor_analysis.core.constants import (
     ALLOWED_HTTP_METHODS,
-    MAX_RETRIES,
     NETSUITE_API_VERSION,
     NETSUITE_BASE_URL_TEMPLATE,
-    RETRY_DELAY_SECONDS,
 )
 from vendor_analysis.core.exceptions import (
     NetSuiteAPIError,
@@ -96,8 +94,10 @@ class NetSuiteClient:
         }
 
         last_error: Exception | None = None
+        max_retries = self.settings.max_retries
+        retry_delay = self.settings.retry_delay
 
-        for attempt in range(MAX_RETRIES):
+        for attempt in range(max_retries):
             try:
                 response = self.client.request(
                     method=method,
@@ -117,16 +117,16 @@ class NetSuiteClient:
 
             except httpx.HTTPError as e:
                 last_error = e
-                if attempt < MAX_RETRIES - 1:
-                    time.sleep(RETRY_DELAY_SECONDS * (attempt + 1))
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay * (attempt + 1))
                     continue
                 raise NetSuiteConnectionError(
-                    f"Failed after {MAX_RETRIES} attempts: {e}"
+                    f"Failed after {max_retries} attempts: {e}"
                 ) from e
 
         # Should never reach here, but satisfy type checker
         raise NetSuiteConnectionError(
-            f"Request failed after {MAX_RETRIES} retries: {last_error}"
+            f"Request failed after {max_retries} retries: {last_error}"
         )
 
     def _parse_error_response(self, response: httpx.Response) -> str:

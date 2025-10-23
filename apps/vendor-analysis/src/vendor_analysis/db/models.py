@@ -30,7 +30,8 @@ class VendorRecord(Base):
     balance: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     last_modified_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     synced_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime, default=lambda: datetime.now(datetime.UTC if hasattr(datetime, 'UTC') else None),  # type: ignore[arg-type]
+        nullable=False
     )
 
 
@@ -52,7 +53,8 @@ class TransactionRecord(Base):
     currency: Mapped[str | None] = mapped_column(String(10), nullable=True)
     exchange_rate: Mapped[float] = mapped_column(Float, default=1.0, nullable=False)
     synced_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
+        DateTime, default=lambda: datetime.now(datetime.UTC if hasattr(datetime, 'UTC') else None),  # type: ignore[arg-type]
+        nullable=False
     )
 
 

@@ -6,7 +6,7 @@ non-GET methods will raise ReadOnlyViolationError.
 """
 
 import time
-from typing import Any, Final
+from typing import Any
 
 import httpx
 

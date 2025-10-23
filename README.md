@@ -28,9 +28,56 @@ Technical documentation covering NetSuite development patterns and integration a
   <img src="assets/architecture.png" alt="System Architecture" width="400"/>
 </div>
 
-## Repository Contents
+## Repository Structure
 
-All documentation resides in the `kb/` directory as markdown files. Each document provides specific technical details, code examples, and references to Oracle's official NetSuite documentation.
+```
+/opt/ns/
+├── kb/                    # NetSuite knowledge base (documentation)
+├── apps/                  # Application suite
+│   └── vendor-analysis/   # Vendor cost analysis CLI (Python)
+├── .claude/               # Development workflows
+└── assets/                # Repository assets
+```
+
+### Knowledge Base
+
+Technical documentation in `kb/` covering NetSuite development patterns:
+
+- **authentication.md** - OAuth 2.0 implementation (TBA deprecated Feb 2025)
+- **restlets.md** - Custom REST endpoints with SuiteScript 2.x
+- **suitescript-modules.md** - N/https, N/record, N/search references
+- **suitetalk-rest-api.md** - Standard REST web services
+- **suitecloud-sdk-framework.md** - CLI tools and deployment
+- **third-party-sdks.md** - Integration libraries (Node.js, Python)
+- **open-source-projects.md** - Community tools
+
+### Applications
+
+#### vendor-analysis (Python CLI)
+
+Read-only NetSuite vendor cost analysis application.
+
+**Features:**
+- Sync vendors and transactions from NetSuite (OAuth 2.0)
+- Analyze vendor spend and identify top vendors
+- Detect duplicate vendors using fuzzy matching
+- Local PostgreSQL storage for fast analysis
+
+**Tech Stack:**
+- Python 3.12+ with UV package manager
+- Typer CLI framework
+- SQLAlchemy + PostgreSQL
+- Ruff (linting/formatting) + Pyright (strict type checking)
+- NetSuite SuiteTalk REST API
+
+**Quick Start:**
+```bash
+cd apps/vendor-analysis
+uv sync
+uv run vendor-analysis --help
+```
+
+See [apps/vendor-analysis/README.md](apps/vendor-analysis/README.md) for complete documentation.
 
 The `.claude/` directory contains development workflow configurations and is excluded from production deployments.
 

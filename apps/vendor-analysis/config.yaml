@@ -1,0 +1,33 @@
+# Vendor Analysis Configuration
+# All values are REQUIRED - application will fail if missing
+
+# Database Configuration
+database:
+  host: localhost
+  port: 5432
+  name: vendor_analysis
+  # user and password come from .env (DB_USER, DB_PASSWORD)
+
+# Application Settings
+application:
+  log_level: INFO
+
+# Analysis Configuration
+analysis:
+  # Duplicate detection similarity threshold (0.0-1.0)
+  duplicate_similarity_threshold: 0.85
+
+  # Number of months for trend analysis
+  trend_analysis_months: 12
+
+  # Default number of top vendors to show
+  top_vendors_default: 10
+
+  # Page size for NetSuite queries
+  page_size: 100
+
+  # Maximum retries for API calls
+  max_retries: 3
+
+  # Retry delay in seconds
+  retry_delay_seconds: 2

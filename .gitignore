@@ -87,3 +87,4 @@ logs/
 # Don't ignore these directories - they should be included
 !kb/
 !.claude/
+.env

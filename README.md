@@ -92,6 +92,33 @@ cd ns
 
 Documentation files can be viewed directly in any markdown reader or through the GitHub web interface.
 
+## Development
+
+### Build & Development Tasks
+
+Repository-level Makefile provides build and development commands:
+
+```bash
+# Install all app dependencies
+make install
+
+# Build all applications
+make build
+
+# Code quality (all apps)
+make typecheck
+make lint
+make format
+
+# Bootstrap applications
+make bootstrap-vendor
+
+# Clean build artifacts
+make clean
+```
+
+See `make help` for all available commands.
+
 ## Contributing
 
 This repository follows standard git workflows. Create feature branches for additions or updates, then submit pull requests for review before merging to main.

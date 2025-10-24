@@ -56,7 +56,7 @@ def fail(message: str) -> NoReturn:
         SystemExit: Always exits with code 1
     """
     logger.error(message)
-    console.print(f"\n[red bold]✗ BOOTSTRAP FAILED[/red bold]")
+    console.print("\n[red bold]✗ BOOTSTRAP FAILED[/red bold]")
     console.print(f"[red]{message}[/red]")
     console.print(f"\n[yellow]Check {log_file} for details[/yellow]")
     sys.exit(1)

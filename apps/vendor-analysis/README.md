@@ -39,7 +39,7 @@ cd apps/vendor-analysis
 make setup
 ```
 
-### Using Bootstrap Script Directly
+### Using Bootstrap Script
 
 Use the idempotent bootstrap script for automated setup:
 
@@ -52,6 +52,9 @@ pip install rich
 
 # Run bootstrap (will install all other dependencies)
 python3 scripts/bootstrap.py
+
+# Or from repository root:
+make bootstrap-vendor
 ```
 
 **Note**: Rich must be installed separately because bootstrap.py runs *before* `uv sync`. After bootstrap completes, Rich will also be available as part of the main application dependencies.
@@ -214,29 +217,7 @@ uv run vendor-analysis sync --vendors-only
 
 ## Usage
 
-### Using Make (Recommended)
-
-```bash
-# Sync data from NetSuite
-make sync
-
-# Analyze vendor spend (top 10)
-make analyze
-
-# Find duplicate vendors
-make duplicates
-
-# With parameters
-make analyze-top N=25
-make duplicates-threshold T=0.90
-```
-
-**See all commands:**
-```bash
-make help
-```
-
-### Using UV Directly
+### Application Commands
 
 ```bash
 # Sync both vendors and transactions
@@ -299,16 +280,31 @@ DB_PASSWORD=...
 
 ### Code Quality
 
+From repository root:
 ```bash
+# Type check all apps
+make typecheck
+
+# Lint all apps
+make lint
+
+# Format all apps
+make format
+
+# Build package
+make build-vendor
+```
+
+Or from app directory:
+```bash
+cd apps/vendor-analysis
+
 # Type check (strict mode)
 uv run pyright
 
 # Lint and format
 uv run ruff check .
 uv run ruff format .
-
-# All checks
-uv run pyright && uv run ruff check . && uv run ruff format --check .
 ```
 
 ### Module Organization

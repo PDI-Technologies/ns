@@ -71,13 +71,18 @@ def analyze_vendor_spend(
         if not vendor:
             continue
 
+        currency_series = group_df["currency"]
+        currency_value = (
+            currency_series.iloc[0] if not currency_series.isna().all() else None
+        )
+
         summary = VendorSpendSummary(
             vendor_id=str(vendor_id_group),
             vendor_name=vendor.company_name or vendor.entity_id,
             total_spend=float(group_df["amount"].sum()),
             transaction_count=len(group_df),
             average_transaction=float(group_df["amount"].mean()),
-            currency=group_df["currency"].iloc[0] if not group_df["currency"].isna().all() else None,
+            currency=currency_value,
             last_transaction_date=group_df["tran_date"].max(),
         )
         summary_data.append(summary)
@@ -159,13 +164,18 @@ def get_vendors_by_date_range(
         if not vendor:
             continue
 
+        currency_series = group_df["currency"]
+        currency_value = (
+            currency_series.iloc[0] if not currency_series.isna().all() else None
+        )
+
         summary = VendorSpendSummary(
             vendor_id=str(vendor_id),
             vendor_name=vendor.company_name or vendor.entity_id,
             total_spend=float(group_df["amount"].sum()),
             transaction_count=len(group_df),
             average_transaction=float(group_df["amount"].mean()),
-            currency=group_df["currency"].iloc[0] if not group_df["currency"].isna().all() else None,
+            currency=currency_value,
             last_transaction_date=group_df["tran_date"].max(),
         )
         summary_data.append(summary)

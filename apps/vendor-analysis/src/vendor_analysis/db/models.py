@@ -4,7 +4,7 @@ SQLAlchemy database models for local vendor analysis storage.
 
 from datetime import datetime
 
-from sqlalchemy import Float, String, Text, Boolean, DateTime, Integer
+from sqlalchemy import Boolean, DateTime, Float, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 

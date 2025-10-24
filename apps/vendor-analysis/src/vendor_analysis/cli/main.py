@@ -77,10 +77,10 @@ def main() -> None:
         app()
     except VendorAnalysisError as e:
         console.print(f"[red]ERROR: {e}[/red]")
-        raise typer.Exit(code=1)
-    except KeyboardInterrupt:
+        raise typer.Exit(code=1) from e
+    except KeyboardInterrupt as e:
         console.print("\n[yellow]Interrupted by user[/yellow]")
-        raise typer.Exit(code=130)
+        raise typer.Exit(code=130) from e
     except Exception as e:
         console.print(f"[red]UNEXPECTED ERROR: {e}[/red]")
         raise  # Re-raise for full traceback

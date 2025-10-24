@@ -2,9 +2,11 @@
 # All values are REQUIRED - application will fail if missing
 
 # Database Configuration
+# Using existing Supabase PostgreSQL instance (port 54322)
+# Change port to 5432 if using standalone PostgreSQL
 database:
   host: localhost
-  port: 5432
+  port: 54322
   name: vendor_analysis
   # user and password come from .env (DB_USER, DB_PASSWORD)
 

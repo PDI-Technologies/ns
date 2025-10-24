@@ -30,7 +30,34 @@ Read-only NetSuite vendor cost analysis and management application.
 - **NetSuite account** with OAuth 2.0 credentials (see Setup section)
 - **UV package manager** - Install: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 
-## Setup
+## Quick Setup (Recommended)
+
+Use the idempotent bootstrap script for automated setup:
+
+```bash
+cd apps/vendor-analysis
+
+# Install Rich library (required for bootstrap script)
+pip install rich
+
+# Run bootstrap
+python3 scripts/bootstrap.py
+```
+
+The bootstrap script will:
+- Check Python 3.12+
+- Install/verify UV package manager
+- Install dependencies
+- Validate configuration files
+- Check database connectivity
+- Initialize database schema
+- Verify CLI is working
+
+**Idempotent**: Safe to run multiple times. See [scripts/README.md](scripts/README.md) for details.
+
+## Manual Setup
+
+If you prefer manual setup or the bootstrap fails:
 
 ### 1. Install Dependencies
 

@@ -39,7 +39,28 @@ chmod +x scripts/bootstrap.py
 ### Requirements
 
 - Python 3.12+
-- Rich library for console output (pip install rich)
+- Rich library for console output (must be installed before running bootstrap)
+
+**Dependency Relationship**:
+- Bootstrap script uses `rich>=13.7.0` (defined in `../pyproject.toml` main dependencies)
+- Rich is also used by the main CLI application for formatted output
+- Bootstrap runs *before* `uv sync`, so Rich must be pre-installed
+- After bootstrap completes, Rich will be available via project dependencies
+
+**Installation**:
+```bash
+# Using pip (installs globally or in active virtualenv)
+pip install rich
+
+# Or using uv pip (if UV already installed)
+uv pip install rich
+```
+
+**Why this design?**
+The bootstrap script could avoid Rich and use plain `print()`, but we chose to use Rich because:
+1. It's already a main dependency (used by CLI commands)
+2. Provides better UX with colors, progress bars, and formatting
+3. Only requires one-time manual installation
 
 ### Logs
 

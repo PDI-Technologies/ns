@@ -88,3 +88,4 @@ logs/
 !kb/
 !.claude/
 .env
+.env copy

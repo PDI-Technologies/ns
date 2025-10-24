@@ -23,6 +23,7 @@ try:
 except ImportError:
     print("ERROR: Rich library not installed")
     print("Install with: pip install rich")
+    print("Or: uv pip install rich")
     sys.exit(1)
 
 console = Console()

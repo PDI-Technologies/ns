@@ -21,6 +21,8 @@ dev = [
     "ruff>=0.4.0",
     "pyright>=1.1.0",
 ]
+# Note: Rich is in main dependencies (used by CLI + bootstrap.py)
+# Bootstrap script runs BEFORE uv sync, so Rich must be installed separately first
 
 [project.scripts]
 vendor-analysis = "vendor_analysis.cli.main:app"

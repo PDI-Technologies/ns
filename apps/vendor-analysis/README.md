@@ -37,12 +37,15 @@ Use the idempotent bootstrap script for automated setup:
 ```bash
 cd apps/vendor-analysis
 
-# Install Rich library (required for bootstrap script)
+# Install Rich (bootstrap script dependency, also used by main CLI)
 pip install rich
+# Or: uv pip install rich
 
-# Run bootstrap
+# Run bootstrap (will install all other dependencies)
 python3 scripts/bootstrap.py
 ```
+
+**Note**: Rich must be installed separately because bootstrap.py runs *before* `uv sync`. After bootstrap completes, Rich will also be available as part of the main application dependencies.
 
 The bootstrap script will:
 - Check Python 3.12+

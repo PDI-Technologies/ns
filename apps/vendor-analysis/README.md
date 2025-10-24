@@ -32,6 +32,15 @@ Read-only NetSuite vendor cost analysis and management application.
 
 ## Quick Setup (Recommended)
 
+### Using Make (Simplest)
+
+```bash
+cd apps/vendor-analysis
+make setup
+```
+
+### Using Bootstrap Script Directly
+
 Use the idempotent bootstrap script for automated setup:
 
 ```bash
@@ -205,7 +214,29 @@ uv run vendor-analysis sync --vendors-only
 
 ## Usage
 
-### Sync Data from NetSuite
+### Using Make (Recommended)
+
+```bash
+# Sync data from NetSuite
+make sync
+
+# Analyze vendor spend (top 10)
+make analyze
+
+# Find duplicate vendors
+make duplicates
+
+# With parameters
+make analyze-top N=25
+make duplicates-threshold T=0.90
+```
+
+**See all commands:**
+```bash
+make help
+```
+
+### Using UV Directly
 
 ```bash
 # Sync both vendors and transactions
@@ -216,25 +247,11 @@ uv run vendor-analysis sync --vendors-only
 
 # Sync only transactions
 uv run vendor-analysis sync --transactions-only
-```
 
-### Analyze Vendor Spend
-
-```bash
-# Show top 10 vendors
-uv run vendor-analysis analyze
-
-# Show top 25 vendors
+# Analyze vendor spend
 uv run vendor-analysis analyze --top 25
-```
 
-### Find Duplicate Vendors
-
-```bash
-# Use default threshold (0.85)
-uv run vendor-analysis duplicates
-
-# Use custom threshold
+# Find duplicate vendors
 uv run vendor-analysis duplicates --threshold 0.90
 ```
 

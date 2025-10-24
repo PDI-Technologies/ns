@@ -8,7 +8,6 @@ Logs to console (with colors) and bootstrap.log file.
 """
 
 import logging
-import os
 import subprocess
 import sys
 from pathlib import Path
@@ -19,7 +18,6 @@ try:
     from rich.console import Console
     from rich.logging import RichHandler
     from rich.panel import Panel
-    from rich.progress import Progress, SpinnerColumn, TextColumn
 except ImportError:
     print("ERROR: Rich library not installed")
     print("Install with: pip install rich")

@@ -89,16 +89,16 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
-        case_sensitive=True,
+        case_sensitive=False,  # Allow NS_ACCOUNT_ID to match ns_account_id
         extra="ignore",
     )
 
-    # NetSuite OAuth 2.0 credentials (REQUIRED from .env)
+    # NetSuite OAuth 2.0 credentials (REQUIRED from .env as NS_ACCOUNT_ID, etc.)
     ns_account_id: str = Field(..., description="NetSuite account ID")
     ns_client_id: str = Field(..., description="OAuth 2.0 consumer key")
     ns_client_secret: str = Field(..., description="OAuth 2.0 consumer secret")
 
-    # Database credentials (REQUIRED from .env)
+    # Database credentials (REQUIRED from .env as DB_USER, DB_PASSWORD)
     db_user: str = Field(..., description="Database user")
     db_password: str = Field(..., description="Database password")
 

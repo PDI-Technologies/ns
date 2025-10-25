@@ -105,6 +105,49 @@ Projects covered:
 - Integration tools (n8n nodes)
 - Development tools
 
+### New Patterns (2025-01)
+
+**Critical NetSuite REST API & Integration Patterns**
+
+#### [patterns/rest-api-queries.md](patterns/rest-api-queries.md) ⚠️ CRITICAL
+**2-Step Data Fetching Pattern**
+- Why query endpoint returns IDs ONLY
+- Correct 2-step pattern for complete data (query IDs → fetch full records)
+- Performance implications (9000 vendors = 9000+ API calls)
+- Optimization strategies (incremental sync, parallel fetching, caching)
+- **This is THE most common NetSuite REST API mistake**
+
+#### [patterns/authentication-methods.md](patterns/authentication-methods.md)
+**Multi-Method Authentication**
+- TBA vs OAuth 2.0 comparison and migration path
+- Credential vernacular (CONSUMER not CLIENT)
+- Complete 4-credential TBA setup (Consumer Key/Secret + Token ID/Secret)
+- Multi-method factory pattern for flexible auth
+- OAuth 2.0 requirements for 2025+
+
+#### [patterns/oauth-signatures.md](patterns/oauth-signatures.md)
+**OAuth 1.0 Signature Bug Pattern**
+- Critical bug: Query parameters MUST be in signature base string
+- Step-by-step signature generation
+- Common 401 "Invalid login attempt" fixes
+- Signature debugging and verification
+
+#### [patterns/custom-fields.md](patterns/custom-fields.md)
+**Custom Field Handling**
+- Field classification (custentity_*, custbody_*, custitem_*, custrecord_*)
+- Discovering custom fields (20-40 per record type common)
+- Reference field extraction (currency, terms, etc.)
+- Flexible storage patterns (Pydantic `extra="allow"`, JSONB)
+- Field lifecycle tracking (first_seen, last_seen, deprecated)
+
+#### [testing/diagnostics-without-ui.md](testing/diagnostics-without-ui.md)
+**Diagnostics Without NetSuite UI Access**
+- Testing authentication programmatically
+- Admin checklists for 401 Unauthorized errors
+- Admin checklists for 403 Forbidden errors
+- Diagnostic script patterns
+- Actionable error messages
+
 ## Quick Lookup Guide
 
 ### By Development Task

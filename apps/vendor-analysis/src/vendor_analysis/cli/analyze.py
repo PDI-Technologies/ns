@@ -4,7 +4,7 @@ from rich.console import Console
 from rich.table import Table
 
 from vendor_analysis.analysis.vendors import get_top_vendors
-from vendor_analysis.core.config import get_settings
+from vendor_analysis.core.config import get_logger, get_settings
 from vendor_analysis.db.session import get_session
 
 console = Console()
@@ -17,6 +17,9 @@ def analyze_command(top: int = 10) -> None:
     Args:
         top: Number of top vendors to display
     """
+    logger = get_logger()
+    logger.info(f"Command: analyze (top={top})")
+
     settings = get_settings()
     session = get_session(settings)
 
@@ -25,6 +28,7 @@ def analyze_command(top: int = 10) -> None:
     summaries = get_top_vendors(session, settings, top_n=top)
 
     if not summaries:
+        logger.warning("No vendor data found in database")
         console.print("[red]No vendor data found. Run 'sync' first.[/red]")
         return
 
@@ -56,4 +60,8 @@ def analyze_command(top: int = 10) -> None:
     console.print(f"\n[green]Total Spend (Top {top}): ${total_spend:,.2f}[/green]")
     console.print(f"[blue]Total Transactions: {total_transactions}[/blue]")
 
+    logger.info(
+        f"Analysis complete: {len(summaries)} vendors, "
+        f"${total_spend:,.2f} total spend, {total_transactions} transactions"
+    )
     session.close()

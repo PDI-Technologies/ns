@@ -4,49 +4,91 @@ NetSuite-specific queries for vendor and transaction data.
 All queries are read-only using SuiteTalk REST API.
 """
 
-from typing import Any
+from typing import Any, Callable
 
-from vendor_analysis.core.config import Settings
+from vendor_analysis.core.config import Settings, get_logger
 from vendor_analysis.netsuite.client import NetSuiteClient
 from vendor_analysis.netsuite.models import Vendor, VendorBill
 
 
-def fetch_all_vendors(client: NetSuiteClient, settings: Settings) -> list[Vendor]:
+def fetch_all_vendors_suiteql(
+    client: NetSuiteClient,
+    settings: Settings,
+    max_created_date: str | None = None,
+    limit: int | None = None,
+    progress_callback: Callable[[str, int, int, int], None] | None = None,
+) -> list[dict[str, Any]]:
     """
-    Fetch all vendors from NetSuite (paginated).
+    Fetch complete vendor data using SuiteQL with high-water mark.
+
+    Uses MAX(created_date) from database as starting point.
+    Fetches records created >= max_date, ordered chronologically.
 
     Args:
         client: NetSuite API client
         settings: Application settings
+        max_created_date: Highest created_date in database (YYYY-MM-DD format)
+        limit: Maximum number of records to fetch (for testing)
+        progress_callback: Optional callback(phase, current, total, pages) for progress updates
 
     Returns:
-        List of Vendor objects
+        List of complete vendor data dictionaries from NetSuite
     """
-    vendors: list[Vendor] = []
+    logger = get_logger()
+    vendor_data_list: list[dict[str, Any]] = []
+
+    # Build SuiteQL query with high-water mark
+    sql_query = "SELECT * FROM vendor"
+
+    if max_created_date:
+        # Fetch records created on or after the max date (handles partial day syncs)
+        sql_query += f" WHERE datecreated >= TO_DATE('{max_created_date}', 'YYYY-MM-DD')"
+
+    # Order by created date to process chronologically
+    sql_query += " ORDER BY datecreated ASC"
+
+    logger.info(f"SuiteQL query: {sql_query}")
+
+    # Fetch records using pagination
     offset = 0
-    page_size = settings.page_size
+    batch_size = settings.batch_size
+    total_records = None
+    total_pages = None
 
     while True:
-        response = client.query_records(
-            record_type="vendor",
-            limit=page_size,
-            offset=offset,
-        )
+        response = client.query_suiteql(sql_query, limit=batch_size, offset=offset)
 
         items = response.get("items", [])
         if not items:
             break
 
-        for item in items:
-            vendors.append(_parse_vendor(item))
+        vendor_data_list.extend(items)
 
-        # Check if more results available
+        # Get total on first page
+        if total_records is None and response.get("totalResults"):
+            total_records = response["totalResults"]
+            total_pages = (total_records + batch_size - 1) // batch_size
+            logger.info(f"Total vendors to fetch: {total_records} ({total_pages} pages)")
+
+        # Report progress
+        if progress_callback and total_records and total_pages:
+            current_page = (offset // batch_size) + 1
+            progress_callback("fetch_records", len(vendor_data_list), total_records, total_pages)
+
+        # Apply limit if specified (for testing)
+        if limit and len(vendor_data_list) >= limit:
+            vendor_data_list = vendor_data_list[:limit]
+            break
+
         if not response.get("hasMore", False):
             break
 
-        offset += page_size
+        offset += batch_size
 
-    return vendors
+    logger.info(f"Fetched {len(vendor_data_list)} vendors via SuiteQL")
+    return vendor_data_list
+
+
 
 
 def fetch_vendor_by_id(client: NetSuiteClient, vendor_id: str) -> Vendor:
@@ -64,50 +106,90 @@ def fetch_vendor_by_id(client: NetSuiteClient, vendor_id: str) -> Vendor:
     return _parse_vendor(data)
 
 
-def fetch_vendor_bills(
+def fetch_vendor_bills_suiteql(
     client: NetSuiteClient,
     settings: Settings,
     vendor_id: str | None = None,
-) -> list[VendorBill]:
+    max_created_date: str | None = None,
+    limit: int | None = None,
+    progress_callback: Callable[[str, int, int, int], None] | None = None,
+) -> list[dict[str, Any]]:
     """
-    Fetch vendor bills (transactions).
+    Fetch complete vendor bill data using SuiteQL with high-water mark.
+
+    Uses MAX(created_date) from database as starting point.
+    Fetches records created >= max_date, ordered chronologically.
 
     Args:
         client: NetSuite API client
         settings: Application settings
         vendor_id: Optional vendor ID to filter by
+        max_created_date: Highest created_date in database (YYYY-MM-DD format)
+        limit: Maximum number of records to fetch (for testing)
+        progress_callback: Optional callback(phase, current, total, pages) for progress updates
 
     Returns:
-        List of VendorBill objects
+        List of complete vendor bill data dictionaries from NetSuite
     """
-    bills: list[VendorBill] = []
-    offset = 0
-    page_size = settings.page_size
+    logger = get_logger()
+    bill_data_list: list[dict[str, Any]] = []
 
-    # Build query filter if vendor_id provided
-    query = f"vendor.internalId = {vendor_id}" if vendor_id else None
+    # Build SuiteQL query
+    sql_query = "SELECT * FROM transaction WHERE type = 'VendBill'"
+
+    # Add filters
+    if vendor_id:
+        sql_query += f" AND entity = '{vendor_id}'"
+
+    if max_created_date:
+        # Fetch records created on or after the max date (handles partial day syncs)
+        sql_query += f" AND createddate >= TO_DATE('{max_created_date}', 'YYYY-MM-DD')"
+
+    # Order by created date to process chronologically
+    sql_query += " ORDER BY createddate ASC"
+
+    logger.info(f"SuiteQL query: {sql_query}")
+
+    # Fetch records using pagination
+    offset = 0
+    batch_size = settings.batch_size
+    total_records = None
+    total_pages = None
 
     while True:
-        response = client.query_records(
-            record_type="vendorbill",
-            query=query,
-            limit=page_size,
-            offset=offset,
-        )
+        response = client.query_suiteql(sql_query, limit=batch_size, offset=offset)
 
         items = response.get("items", [])
         if not items:
             break
 
-        for item in items:
-            bills.append(_parse_vendor_bill(item))
+        bill_data_list.extend(items)
+
+        # Get total on first page
+        if total_records is None and response.get("totalResults"):
+            total_records = response["totalResults"]
+            total_pages = (total_records + batch_size - 1) // batch_size
+            logger.info(f"Total bills to fetch: {total_records} ({total_pages} pages)")
+
+        # Report progress
+        if progress_callback and total_records and total_pages:
+            current_page = (offset // batch_size) + 1
+            progress_callback("fetch_records", len(bill_data_list), total_records, total_pages)
+
+        # Apply limit if specified (for testing)
+        if limit and len(bill_data_list) >= limit:
+            bill_data_list = bill_data_list[:limit]
+            break
 
         if not response.get("hasMore", False):
             break
 
-        offset += page_size
+        offset += batch_size
 
-    return bills
+    logger.info(f"Fetched {len(bill_data_list)} bills via SuiteQL")
+    return bill_data_list
+
+
 
 
 def _parse_vendor(data: dict[str, Any]) -> Vendor:
@@ -132,7 +214,7 @@ def _parse_vendor_bill(data: dict[str, Any]) -> VendorBill:
         id=data.get("id", ""),
         vendor_id=data.get("entity", {}).get("id", ""),
         tran_id=data.get("tranId"),
-        tran_date=data.get("tranDate", ""),
+        tran_date=data.get("tranDate"),  # Returns None if not present
         due_date=data.get("dueDate"),
         amount=float(data.get("userTotal", 0.0)),
         status=data.get("status", {}).get("refName") if "status" in data else None,

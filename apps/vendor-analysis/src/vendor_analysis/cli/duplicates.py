@@ -4,7 +4,7 @@ from rich.console import Console
 from rich.table import Table
 
 from vendor_analysis.analysis.duplicates import detect_duplicate_vendors
-from vendor_analysis.core.config import get_settings
+from vendor_analysis.core.config import get_logger, get_settings
 from vendor_analysis.db.session import get_session
 
 console = Console()
@@ -17,6 +17,9 @@ def duplicates_command(threshold: float = 0.85) -> None:
     Args:
         threshold: Similarity threshold (0.0-1.0)
     """
+    logger = get_logger()
+    logger.info(f"Command: duplicates (threshold={threshold})")
+
     settings = get_settings()
     session = get_session(settings)
 
@@ -25,6 +28,7 @@ def duplicates_command(threshold: float = 0.85) -> None:
     duplicates = detect_duplicate_vendors(session, settings, threshold=threshold)
 
     if not duplicates:
+        logger.info("No potential duplicates found")
         console.print("[green]No potential duplicates found![/green]")
         session.close()
         return
@@ -45,4 +49,5 @@ def duplicates_command(threshold: float = 0.85) -> None:
     console.print(table)
     console.print(f"\n[blue]Found {len(duplicates)} potential duplicate pairs[/blue]")
 
+    logger.info(f"Duplicates detection complete: found {len(duplicates)} potential duplicate pairs")
     session.close()

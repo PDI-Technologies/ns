@@ -33,7 +33,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         RichHandler(console=console, rich_tracebacks=True, markup=True),
-        logging.FileHandler(log_file, mode="a", encoding="utf-8"),
+        logging.FileHandler(log_file, mode="w", encoding="utf-8"),
     ],
 )
 logger = logging.getLogger("bootstrap")
@@ -56,7 +56,7 @@ def fail(message: str) -> NoReturn:
         SystemExit: Always exits with code 1
     """
     logger.error(message)
-    console.print("\n[red bold]✗ BOOTSTRAP FAILED[/red bold]")
+    console.print("\n[red bold]BOOTSTRAP FAILED[/red bold]")
     console.print(f"[red]{message}[/red]")
     console.print(f"\n[yellow]Check {log_file} for details[/yellow]")
     sys.exit(1)
@@ -137,9 +137,7 @@ def check_python_version() -> None:
             f"Install Python 3.12+: https://www.python.org/downloads/"
         )
 
-    console.print(
-        f"[green]✓[/green] Python {version.major}.{version.minor}.{version.micro}"
-    )
+    console.print(f"[green]OK[/green] Python {version.major}.{version.minor}.{version.micro}")
 
 
 def check_uv_installed() -> bool:
@@ -154,7 +152,7 @@ def check_uv_installed() -> bool:
         )
         if result.returncode == 0:
             version = result.stdout.strip()
-            console.print(f"[green]✓[/green] UV installed: {version}")
+            console.print(f"[green]OK[/green] UV installed: {version}")
             return True
         return False
     except FileNotFoundError:
@@ -174,12 +172,18 @@ def install_uv() -> None:
 
     try:
         run_command(install_cmd, "Installing UV package manager")
-        console.print("[green]✓[/green] UV installed successfully")
-    except BootstrapError:
-        fail(
-            "Failed to install UV package manager\n"
-            "Manually install: curl -LsSf https://astral.sh/uv/install.sh | sh"
-        )
+        console.print("[green]OK[/green] UV installed successfully")
+
+        # Verify UV is now available
+        if not check_uv_installed():
+            fail(
+                "UV installed but not found in PATH\n"
+                "You may need to restart your shell or run:\n"
+                "  source $HOME/.cargo/env\n"
+                "Then re-run this script"
+            )
+    except BootstrapError as e:
+        fail(f"{e}\n\nManually install: curl -LsSf https://astral.sh/uv/install.sh | sh")
 
 
 def check_directory() -> Path:
@@ -199,12 +203,10 @@ def check_directory() -> Path:
     content = pyproject.read_text()
     if 'name = "vendor-analysis"' not in content:
         fail(
-            f"Not in vendor-analysis directory\n"
-            f"Current: {cwd}\n"
-            f"Expected: .../apps/vendor-analysis"
+            f"Not in vendor-analysis directory\nCurrent: {cwd}\nExpected: .../apps/vendor-analysis"
         )
 
-    console.print(f"[green]✓[/green] Directory: {cwd}")
+    console.print(f"[green]OK[/green] Directory: {cwd}")
     return cwd
 
 
@@ -227,7 +229,7 @@ def sync_dependencies(project_dir: Path) -> None:
         cwd=project_dir,
     )
 
-    console.print("[green]✓[/green] Dependencies installed")
+    console.print("[green]OK[/green] Dependencies installed")
 
 
 def check_config_files(project_dir: Path) -> None:
@@ -237,27 +239,37 @@ def check_config_files(project_dir: Path) -> None:
     # Check config.yaml
     config_yaml = project_dir / "config.yaml"
     if not config_yaml.exists():
-        fail(
-            f"config.yaml not found in {project_dir}\n"
-            f"This file should exist in the repository"
-        )
-    console.print("[green]✓[/green] config.yaml found")
+        fail(f"config.yaml not found in {project_dir}\nThis file should exist in the repository")
+    console.print("[green]OK[/green] config.yaml found")
 
     # Check .env (or symlink)
     env_file = project_dir / ".env"
     if not env_file.exists():
-        console.print("[yellow]⚠[/yellow] .env file not found")
-        console.print(
-            "[yellow]Create .env file with NetSuite and database credentials[/yellow]"
-        )
-        console.print("[yellow]See .env.example for template[/yellow]")
-        fail(
-            ".env file required\n"
-            "Create from template: cp .env.example .env\n"
-            "Or symlink from parent: ln -s ../../.env .env"
-        )
+        console.print("[yellow]WARNING[/yellow] .env file not found")
+        console.print("[yellow]Create .env file with NetSuite and database credentials[/yellow]")
 
-    console.print("[green]✓[/green] .env found")
+        # Check if .env.example exists to provide better guidance
+        env_example = project_dir / ".env.example"
+        if env_example.exists():
+            console.print("[yellow]Template available: .env.example[/yellow]")
+            fail(
+                ".env file required\n"
+                "Create from template: cp .env.example .env\n"
+                "Then edit .env with your credentials\n"
+                "Or symlink from parent: ln -s ../../.env .env"
+            )
+        else:
+            fail(
+                ".env file required\n"
+                "Create .env with the following variables:\n"
+                "  NS_ACCOUNT_ID=your_account_id\n"
+                "  NS_CLIENT_ID=your_client_id\n"
+                "  NS_CLIENT_SECRET=your_client_secret\n"
+                "  DB_USER=your_db_user\n"
+                "  DB_PASSWORD=your_db_password"
+            )
+
+    console.print("[green]OK[/green] .env found")
 
 
 def check_database_connection(project_dir: Path) -> bool:
@@ -288,9 +300,10 @@ except Exception as e:
 """
 
     test_file = project_dir / "test_db_connection.py"
-    test_file.write_text(test_script)
 
     try:
+        test_file.write_text(test_script)
+
         result = subprocess.run(
             ["uv", "run", "python", "test_db_connection.py"],
             cwd=project_dir,
@@ -299,21 +312,24 @@ except Exception as e:
             check=False,
         )
 
-        test_file.unlink()  # Clean up
-
         if result.returncode == 0:
-            console.print(f"[green]✓[/green] Database connected: {result.stdout.strip()}")
+            console.print(f"[green]OK[/green] Database connected: {result.stdout.strip()}")
             return True
         else:
-            console.print("[yellow]⚠[/yellow] Database not accessible")
+            console.print("[yellow]WARNING[/yellow] Database not accessible")
             logger.warning(f"Database check failed: {result.stderr}")
             return False
 
     except Exception as e:
         logger.warning(f"Database check error: {e}")
-        if test_file.exists():
-            test_file.unlink()
         return False
+    finally:
+        # Always clean up test file
+        if test_file.exists():
+            try:
+                test_file.unlink()
+            except Exception as cleanup_error:
+                logger.warning(f"Failed to clean up test file: {cleanup_error}")
 
 
 def create_database_if_needed() -> None:
@@ -345,7 +361,7 @@ def initialize_database(project_dir: Path) -> None:
         cwd=project_dir,
     )
 
-    console.print("[green]✓[/green] Database schema initialized")
+    console.print("[green]OK[/green] Database schema initialized")
 
 
 def verify_cli(project_dir: Path) -> None:
@@ -363,7 +379,7 @@ def verify_cli(project_dir: Path) -> None:
     if result.returncode != 0:
         fail(f"CLI verification failed:\n{result.stderr}")
 
-    console.print("[green]✓[/green] CLI working")
+    console.print("[green]OK[/green] CLI working")
 
 
 def main() -> None:
@@ -411,7 +427,7 @@ def main() -> None:
         console.print("\n" + "=" * 60)
         console.print(
             Panel.fit(
-                "[bold green]✓ Bootstrap Complete![/bold green]\n\n"
+                "[bold green]Bootstrap Complete![/bold green]\n\n"
                 "Next steps:\n"
                 "1. Verify NetSuite credentials in .env\n"
                 "2. Run: uv run vendor-analysis sync\n"

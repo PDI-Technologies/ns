@@ -1,0 +1,64 @@
+[project]
+name = "financial-analytics"
+version = "0.1.0"
+description = "Comprehensive financial analytics and reporting from NetSuite and Salesforce"
+requires-python = ">=3.12"
+dependencies = [
+    "libs-logger @ file:///opt/ns/libs/logger",
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "pyyaml>=6.0.0",
+    "httpx>=0.27.0",
+    "sqlalchemy>=2.0.30",
+    "psycopg2-binary>=2.9.9",
+    "pandas>=2.2.2",
+    "numpy>=1.26.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4.0",
+    "pyright>=1.1.0",
+]
+
+[project.scripts]
+fin-analytics = "financial_analytics.cli.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/financial_analytics"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "B", "C4", "UP", "SIM", "TCH"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"src/financial_analytics/extractors/netsuite_models.py" = ["N815"]  # NetSuite API uses camelCase
+"src/financial_analytics/extractors/salesforce_extractor.py" = ["F821"]  # MCP tools injected at runtime
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+typeCheckingMode = "strict"
+pythonVersion = "3.12"
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+strictListInference = true
+strictDictionaryInference = true
+strictSetInference = true

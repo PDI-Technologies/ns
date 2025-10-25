@@ -226,6 +226,34 @@ For detailed module documentation, see [/opt/ns/kb/suitescript-modules.md](/opt/
 
 ## Development Patterns
 
+### Core Patterns (REST API & Integration)
+
+**Authentication**
+- **Multi-Method Support**: [patterns/authentication-methods.md](patterns/authentication-methods.md)
+  - TBA vs OAuth 2.0 comparison
+  - Credential vernacular (CONSUMER not CLIENT)
+  - 4-credential TBA setup
+  - Multi-method factory pattern
+- **OAuth 1.0 Signatures**: [patterns/oauth-signatures.md](patterns/oauth-signatures.md)
+  - Query parameter signature bug (CRITICAL)
+  - Signature generation steps
+  - Common 401 error fixes
+- **Diagnostics Without UI**: [testing/diagnostics-without-ui.md](testing/diagnostics-without-ui.md)
+  - Testing credentials programmatically
+  - Admin checklists for 401/403 errors
+  - Diagnostic script patterns
+
+**Data Access**
+- **REST API 2-Step Query**: [patterns/rest-api-queries.md](patterns/rest-api-queries.md) ⚠️ CRITICAL
+  - Why query endpoint returns IDs ONLY
+  - Correct 2-step pattern for complete data
+  - SuiteQL guidance for bulk operations (use for 10+ records)
+- **Custom Fields Handling**: [patterns/custom-fields.md](patterns/custom-fields.md)
+  - Field classification (custentity_*, custbody_*, custitem_*)
+  - Reference field extraction
+  - Flexible storage patterns (JSONB, Pydantic)
+  - Lifecycle tracking
+
 ### Error Handling
 - See [patterns/error-handling.md](patterns/error-handling.md)
 - Try-catch patterns, error logging, error recovery

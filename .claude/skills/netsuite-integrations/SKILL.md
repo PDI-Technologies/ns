@@ -27,6 +27,37 @@ Comprehensive skill for building integrations between NetSuite and external syst
 | Salesforce sync | RESTlet + MCP tools | Bi-directional | CRM integration, Quote-to-cash |
 | Database sync | Scheduled Script + SQL MCP | Bi-directional | Data warehouse, Analytics |
 
+### Authentication Method Selection
+
+| Scenario | Method | Timeline | Complexity | Credentials |
+|----------|--------|----------|------------|-------------|
+| New integration (2025+) | OAuth 2.0 | Long-term | Medium | 2 (Consumer Key/Secret) |
+| Existing integration | TBA | Until Feb 2025 | High | 4 (Consumer + Token) |
+| Migration in progress | Multi-method | Transition period | Medium | Both sets |
+| Testing/Sandbox | Either | Any | Varies | Match production |
+
+**Key points:**
+- OAuth 2.0 required for all new integrations as of February 2025
+- TBA deprecated but still functional through February 2025
+- Use multi-method factory pattern for gradual migration
+- See [authentication/tba.md](authentication/tba.md) and [authentication/oauth2.md](authentication/oauth2.md)
+
+### Data Fetching Strategy Selection
+
+| Data Volume | Strategy | API Calls | Time Estimate | Complexity |
+|-------------|----------|-----------|---------------|------------|
+| < 1000 records | Full sync, sequential | ~1000 | 5-10 min | Low |
+| 1000-10000 records | Incremental + batch | 100-10000 | 1-75 min | Medium |
+| 10000+ records | Incremental + parallel + cache | 100-1000 | < 10 min | High |
+| Real-time needs | Webhooks + RESTlets | Per event | Real-time | Medium |
+
+**Key patterns:**
+- **2-step fetch REQUIRED:** Query returns IDs only, must fetch full records individually
+- **Incremental sync:** Only fetch changed records (99% API call reduction)
+- **Parallel fetching:** 5-10x faster but requires rate limit management
+- **Caching:** Avoid redundant fetches (95% reduction for static data)
+- See [suitetalk/rest-api.md](suitetalk/rest-api.md) and [patterns/data-fetching.md](patterns/data-fetching.md)
+
 ## Knowledge Base Resources
 
 ### Local KB Documentation
@@ -311,10 +342,10 @@ See [suitetalk/soap-api.md](suitetalk/soap-api.md)
 See [suitetalk/bulk-operations.md](suitetalk/bulk-operations.md)
 
 **Methods:**
+- **SuiteQL** - Use for fetching 10+ records
 - REST API batching
 - SOAP getList/addList/updateList
 - CSV imports
-- SuiteQL for queries
 
 ## External APIs (Outbound Integration)
 

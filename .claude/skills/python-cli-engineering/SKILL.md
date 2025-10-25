@@ -706,6 +706,65 @@ uv build                  # Creates wheel in dist/
 - Error handling
 - Logging stdout/stderr
 
+### Data Persistence
+
+**PostgreSQL JSONB:**
+→ **See**: [patterns/postgresql-jsonb.md](patterns/postgresql-jsonb.md)
+
+- Schema-flexible storage (hybrid typed + JSONB columns)
+- GIN indexes for JSONB query performance
+- Lifecycle metadata tracking (first_seen, last_seen, deprecated)
+- Complete audit trail with raw_data storage
+- Reference implementation: vendor-analysis app
+
+**Schema Resilience:**
+→ **See**: [patterns/schema-resilience.md](patterns/schema-resilience.md)
+
+- 3-layer architecture (Source → Storage → Application)
+- Field classification (known vs unknown fields)
+- Merge strategies for preserving historical data
+- Never destroy data (additive migrations only)
+- Graceful degradation when fields removed
+
+**Database Migrations:**
+→ **See**: [reference/database-migrations.md](reference/database-migrations.md)
+
+- Idempotent migration patterns (IF NOT EXISTS)
+- Verification steps for migration success
+- Python migration runners
+- Never DROP columns rule
+- Safe rollback strategies
+
+### API Integration
+
+**Flexible Data Models:**
+→ **See**: [patterns/pydantic-flexible.md](patterns/pydantic-flexible.md)
+
+- Pydantic for inconsistent APIs (extra="allow")
+- Handle empty strings, missing fields, type variations
+- Field validators for common API quirks
+- Reference field extraction patterns
+- Model validators for nested objects
+
+**Multi-Method Authentication:**
+→ **See**: [patterns/multi-method-auth.md](patterns/multi-method-auth.md)
+
+- Factory pattern for multiple auth methods
+- Abstract base class for auth providers
+- Configuration-driven auth selection
+- Gradual migration support (OAuth 1.0 → OAuth 2.0)
+- Environment-specific authentication
+
+### Build Integration
+
+**Make Commands:**
+→ **See**: [patterns/make-integration.md](patterns/make-integration.md)
+
+- ARGS pattern for passing CLI flags through Make
+- Mono-repo CLI access from root
+- Catch-all rule pattern
+- Simple command proxying
+
 ## Anti-Patterns
 
 ❌ **Monolithic main.py**: Split into modular commands

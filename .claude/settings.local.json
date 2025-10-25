@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(make:*)",
+      "WebSearch",
+      "WebFetch(domain:timdietrich.me)",
+      "Bash(python:*)",
+      "Bash(uv run vendor-analysis:*)",
+      "Bash(psql:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

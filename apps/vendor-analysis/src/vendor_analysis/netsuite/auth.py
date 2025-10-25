@@ -12,6 +12,7 @@ import httpx
 
 from vendor_analysis.core.config import Settings
 from vendor_analysis.core.exceptions import NetSuiteConnectionError
+from vendor_analysis.netsuite.auth_base import NetSuiteAuthProvider
 
 
 @dataclass
@@ -28,15 +29,15 @@ class OAuth2Token:
         return time.time() >= (self.expires_at - 60)
 
 
-class NetSuiteAuth:
-    """Manages NetSuite OAuth 2.0 authentication."""
+class OAuth2AuthProvider(NetSuiteAuthProvider):
+    """OAuth 2.0 Client Credentials authentication provider."""
 
     TOKEN_ENDPOINT: Final[str] = (
         "https://{account_id}.suitetalk.api.netsuite.com/services/rest/auth/oauth2/v1/token"
     )
 
     def __init__(self, settings: Settings) -> None:
-        """Initialize auth manager with settings."""
+        """Initialize OAuth 2.0 auth provider with settings."""
         self.settings = settings
         self._token: OAuth2Token | None = None
 
@@ -69,8 +70,8 @@ class NetSuiteAuth:
 
         data = {
             "grant_type": "client_credentials",
-            "client_id": self.settings.ns_client_id,
-            "client_secret": self.settings.ns_client_secret,
+            "client_id": self.settings.ns_consumer_key,
+            "client_secret": self.settings.ns_consumer_secret,
         }
 
         try:
@@ -82,8 +83,13 @@ class NetSuiteAuth:
             )
             response.raise_for_status()
         except httpx.HTTPError as e:
+            error_body = ""
+            try:
+                error_body = f"\nResponse body: {response.text}"
+            except Exception:
+                pass
             raise NetSuiteConnectionError(
-                f"Failed to obtain OAuth 2.0 token: {e}"
+                f"Failed to obtain OAuth 2.0 token: {e}{error_body}"
             ) from e
 
         token_data = response.json()
@@ -94,9 +100,13 @@ class NetSuiteAuth:
             expires_at=time.time() + token_data["expires_in"],
         )
 
-    def get_auth_headers(self) -> dict[str, str]:
+    def get_auth_headers(self, url: str, method: str = "GET") -> dict[str, str]:
         """
         Get authorization headers for API requests.
+
+        Args:
+            url: Request URL (not used for OAuth 2.0)
+            method: HTTP method (not used for OAuth 2.0)
 
         Returns:
             Dictionary with Authorization header

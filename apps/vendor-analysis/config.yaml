@@ -12,7 +12,15 @@ database:
 
 # Application Settings
 application:
-  log_level: INFO
+  log_level: DEBUG
+  auth_method: tba
+
+# Logging Configuration
+logging:
+  level: DEBUG
+  file_path: logs
+  archive_path: logs/archive
+  max_size_mb: 10
 
 # Analysis Configuration
 analysis:
@@ -25,8 +33,9 @@ analysis:
   # Default number of top vendors to show
   top_vendors_default: 10
 
-  # Page size for NetSuite queries
-  page_size: 100
+  # Batch size for SuiteQL bulk queries (recommended: 250, max: 1000)
+  # Controls records fetched per API call for efficient pagination
+  batch_size: 1000
 
   # Maximum retries for API calls
   max_retries: 3

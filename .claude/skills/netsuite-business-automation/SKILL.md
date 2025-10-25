@@ -5,612 +5,175 @@ description: Automates accounting, finance, and operations workflows in NetSuite
 
 # NetSuite Business Automation
 
-Comprehensive skill for automating accounting, finance, and operations workflows in NetSuite.
+Comprehensive skill for automating accounting, finance, and operations workflows in NetSuite using SuiteScript 2.x.
+
+## When to Use This Skill
+
+Use this skill when you need to:
+- Automate financial processes (journal entries, reconciliation, period close)
+- Build order-to-cash workflows (sales orders → fulfillment → invoicing → revenue recognition)
+- Automate procure-to-pay processes (requisitions → POs → receiving → vendor bills → payments)
+- Create custom approval workflows
+- Design custom record types and relationships
+- Optimize performance for large-volume transaction processing
 
 ## Quick Start
 
-### Common Automations
-- **Finance**: See [finance/journal-entries.md](finance/journal-entries.md)
-- **Order-to-Cash**: See [order-to-cash/sales-orders.md](order-to-cash/sales-orders.md)
-- **Procure-to-Pay**: See [procure-to-pay/requisitions-pos.md](procure-to-pay/requisitions-pos.md)
-- **Workflows**: See [workflows/approval-routing.md](workflows/approval-routing.md)
-- **Custom Records**: See [custom-records/record-design.md](custom-records/record-design.md)
-
-### Business Process Overview
-
-| Process | Automation Type | Typical Scripts | Use Cases |
-|---------|----------------|-----------------|-----------|
-| **Finance** | Journal Entries, Reconciliation | User Event, Scheduled | Month-end close, Accruals, Intercompany |
-| **Order-to-Cash** | Sales Operations | User Event, Workflow | Order processing, Billing, Revenue |
-| **Procure-to-Pay** | AP Automation | User Event, Scheduled | Procurement, AP, Payments |
-| **Workflows** | Business Logic | Workflow Actions | Approvals, Routing, Notifications |
-| **Custom Records** | Data Extensions | User Event, Client Script | Custom data models, Relationships |
-
-## Knowledge Base Resources
-
-### Local KB Documentation
-- **SuiteScript Modules**: [/opt/ns/kb/suitescript-modules.md](/opt/ns/kb/suitescript-modules.md)
-- **Authentication**: [/opt/ns/kb/authentication.md](/opt/ns/kb/authentication.md)
-- **SuiteCloud SDK**: [/opt/ns/kb/suitecloud-sdk-framework.md](/opt/ns/kb/suitecloud-sdk-framework.md)
-
-### Archon Vector KB
-For NetSuite automation documentation:
-
-```javascript
-mcp__archon__rag_search_knowledge_base(
-  query="journal entry automation NetSuite",
-  match_count=5
-)
-
-mcp__archon__rag_search_code_examples(
-  query="sales order workflow automation",
-  match_count=3
-)
-```
-
-## Finance Automation
-
-### Journal Entries
-See [finance/journal-entries.md](finance/journal-entries.md)
-
-**Automation Types:**
-- Automatic JE creation (User Event afterSubmit)
-- Recurring journal entries (Scheduled Script)
-- Reversal automation (User Event afterSubmit)
-- Intercompany eliminations (Scheduled Script)
-- Foreign currency revaluation (Scheduled Script)
-
-**Common Triggers:**
-- Invoice creation → Revenue recognition JE
-- Payment received → Cash application JE
-- Month-end close → Accrual JEs
-- Payroll processing → Expense allocation JEs
-
-**Example - Auto JE on Invoice:**
-```javascript
-function afterSubmit(scriptContext) {
-    if (scriptContext.type === scriptContext.UserEventType.CREATE) {
-        const invoice = scriptContext.newRecord;
-        const invoiceTotal = invoice.getValue({ fieldId: 'total' });
-
-        // Create journal entry for revenue recognition
-        const je = record.create({
-            type: record.Type.JOURNAL_ENTRY,
-            isDynamic: true
-        });
-
-        // Debit: Accounts Receivable
-        je.selectNewLine({ sublistId: 'line' });
-        je.setCurrentSublistValue({
-            sublistId: 'line',
-            fieldId: 'account',
-            value: AR_ACCOUNT_ID
-        });
-        je.setCurrentSublistValue({
-            sublistId: 'line',
-            fieldId: 'debit',
-            value: invoiceTotal
-        });
-        je.commitLine({ sublistId: 'line' });
-
-        // Credit: Revenue
-        je.selectNewLine({ sublistId: 'line' });
-        je.setCurrentSublistValue({
-            sublistId: 'line',
-            fieldId: 'account',
-            value: REVENUE_ACCOUNT_ID
-        });
-        je.setCurrentSublistValue({
-            sublistId: 'line',
-            fieldId: 'credit',
-            value: invoiceTotal
-        });
-        je.commitLine({ sublistId: 'line' });
-
-        const jeId = je.save();
-        log.audit('JE Created', `Journal Entry ${jeId} for Invoice ${invoice.id}`);
-    }
-}
-```
-
-### Account Reconciliation
-See [finance/reconciliation.md](finance/reconciliation.md)
-
-**Automation Types:**
-- Bank reconciliation matching (Scheduled Script)
-- Variance analysis (Saved Search + Scheduled Script)
-- Account balance monitoring (Scheduled Script)
-- Reconciliation reports (Scheduled Script)
-
-**Workflows:**
-1. Import bank statement (CSV Import or RESTlet)
-2. Match transactions (Scheduled Script with fuzzy matching)
-3. Flag unmatched items (Custom Record)
-4. Review and approve (Workflow)
-5. Generate reconciliation report (Saved Search)
-
-### Period Close
-See [finance/period-close.md](finance/period-close.md)
-
-**Automation Components:**
-- Close checklist tracking (Custom Record + Dashboard)
-- Accrual calculations (Scheduled Script)
-- Deferred revenue recognition (Scheduled Script)
-- Intercompany eliminations (Map/Reduce Script)
-- Financial statement generation (Saved Searches)
-
-**Period Close Checklist:**
-1. Reconcile bank accounts
-2. Review AR aging
-3. Review AP aging
-4. Process accruals
-5. Run depreciation
-6. Intercompany eliminations
-7. Review P&L variances
-8. Generate financial statements
-9. Lock period
-
-### Revenue Recognition
-See [finance/revenue-recognition.md](finance/revenue-recognition.md)
-
-**Methods:**
-- Point-in-time recognition (User Event)
-- Ratable recognition (Scheduled Script)
-- Milestone-based (User Event + Workflow)
-- Subscription billing (Scheduled Script)
-
-**Automation:**
-- Create revenue arrangement
-- Calculate recognition schedule
-- Generate JEs automatically
-- Update deferred revenue balances
-
-### Intercompany Transactions
-See [finance/intercompany.md](finance/intercompany.md)
-
-**Automation:**
-- Intercompany journal entries
-- Elimination entries
-- Currency translation
-- Transfer pricing calculations
-
-## Order-to-Cash (O2C)
-
-### Sales Orders
-See [order-to-cash/sales-orders.md](order-to-cash/sales-orders.md)
-
-**Automation Points:**
-- Order creation validation (User Event beforeSubmit)
-- Pricing and discounts (User Event beforeLoad/beforeSubmit)
-- Credit limit checks (User Event beforeSubmit)
-- Inventory allocation (User Event afterSubmit)
-- Approval routing (Workflow)
-- Order confirmation emails (User Event afterSubmit)
-
-**Example - Credit Limit Check:**
-```javascript
-function beforeSubmit(scriptContext) {
-    const salesOrder = scriptContext.newRecord;
-    const customerId = salesOrder.getValue({ fieldId: 'entity' });
-    const orderTotal = salesOrder.getValue({ fieldId: 'total' });
-
-    // Get customer credit limit and balance
-    const customerRec = search.lookupFields({
-        type: search.Type.CUSTOMER,
-        id: customerId,
-        columns: ['creditlimit', 'balance']
-    });
-
-    const creditLimit = parseFloat(customerRec.creditlimit) || 0;
-    const currentBalance = parseFloat(customerRec.balance) || 0;
-    const newBalance = currentBalance + orderTotal;
-
-    if (creditLimit > 0 && newBalance > creditLimit) {
-        throw error.create({
-            name: 'CREDIT_LIMIT_EXCEEDED',
-            message: `Credit limit exceeded. Limit: $${creditLimit}, New Balance: $${newBalance}`
-        });
-    }
-}
-```
-
-### Fulfillment
-See [order-to-cash/fulfillment.md](order-to-cash/fulfillment.md)
-
-**Automation:**
-- Pick/pack/ship automation
-- Shipping label generation
-- Tracking number updates
-- Inventory updates
-- Customer notifications
-
-**Integration Points:**
-- Shipping carrier APIs (UPS, FedEx, USPS)
-- Warehouse management systems
-- Barcode scanning systems
-
-### Invoicing
-See [order-to-cash/invoicing.md](order-to-cash/invoicing.md)
-
-**Automation:**
-- Auto-invoice on fulfillment
-- Billing schedules
-- Subscription billing
-- Proforma invoices
-- Consolidated invoicing
-
-**Billing Patterns:**
-- One-time billing
-- Recurring billing (monthly, annual)
-- Usage-based billing
-- Milestone billing
-- Progress billing
-
-### Payments
-See [order-to-cash/payments.md](order-to-cash/payments.md)
-
-**Automation:**
-- Payment processing (RESTlet for payment gateway)
-- Auto-application of payments
-- Credit memo creation
-- Refund processing
-- Dunning management
-
-**Payment Gateways:**
-- Stripe integration
-- PayPal integration
-- Authorize.net
-- Custom payment processors
-
-### Revenue Recognition
-See [order-to-cash/revenue.md](order-to-cash/revenue.md)
-
-**ASC 606 Compliance:**
-- Revenue arrangement creation
-- Performance obligation identification
-- Transaction price allocation
-- Recognition schedule generation
-- Deferred revenue tracking
-
-## Procure-to-Pay (P2P)
-
-### Requisitions and Purchase Orders
-See [procure-to-pay/requisitions-pos.md](procure-to-pay/requisitions-pos.md)
-
-**Automation:**
-- Requisition approval workflow
-- Auto-PO creation from requisition
-- Vendor selection logic
-- Budget checking
-- Contract compliance
-
-**Example - Auto-PO Creation:**
-```javascript
-function afterSubmit(scriptContext) {
-    if (scriptContext.type === scriptContext.UserEventType.CREATE) {
-        const requisition = scriptContext.newRecord;
-        const status = requisition.getValue({ fieldId: 'status' });
-
-        if (status === 'Approved') {
-            // Create purchase order
-            const po = record.transform({
-                fromType: record.Type.PURCHASE_REQUISITION,
-                fromId: requisition.id,
-                toType: record.Type.PURCHASE_ORDER,
-                isDynamic: false
-            });
-
-            const poId = po.save();
-            log.audit('PO Created', `PO ${poId} from Requisition ${requisition.id}`);
-        }
-    }
-}
-```
-
-### Receiving
-See [procure-to-pay/receiving.md](procure-to-pay/receiving.md)
-
-**Automation:**
-- Item receipt creation
-- Quantity verification
-- Quality inspection workflow
-- Inventory updates
-- 3-way matching (PO, Receipt, Invoice)
-
-### Vendor Bills
-See [procure-to-pay/vendor-bills.md](procure-to-pay/vendor-bills.md)
-
-**Automation:**
-- Bill matching (PO + Receipt)
-- Approval routing
-- GL coding
-- Payment terms calculation
-- Duplicate detection
-
-**3-Way Match:**
-1. Purchase Order exists
-2. Item Receipt recorded
-3. Vendor Bill matches both
-4. Tolerances within limits
-5. Auto-approve or route for review
-
-### Expense Reports
-See [procure-to-pay/expense-reports.md](procure-to-pay/expense-reports.md)
-
-**Automation:**
-- Receipt OCR and data extraction
-- Policy compliance checking
-- Approval workflow
-- GL allocation
-- Credit card reconciliation
-
-### Payments
-See [procure-to-pay/payments.md](procure-to-pay/payments.md)
-
-**Automation:**
-- Payment batch generation
-- Payment file creation (ACH, Wire)
-- Check printing
-- Payment confirmation
-- 1099 tracking
-
-## Workflows
-
-### Approval Routing
-See [workflows/approval-routing.md](workflows/approval-routing.md)
-
-**Approval Patterns:**
-- Sequential approval (Manager → Director → VP)
-- Parallel approval (Multiple approvers simultaneously)
-- Escalation (Auto-approve if no response)
-- Conditional routing (Amount-based, Department-based)
-
-**Example Workflow:**
-```
-Sales Order > $10,000
-├─> Sales Manager (Required)
-├─> Finance Director (Required if > $50,000)
-└─> VP Sales (Required if > $100,000)
-```
-
-### Notification Automation
-See [workflows/notification-automation.md](workflows/notification-automation.md)
-
-**Notification Types:**
-- Email notifications
-- Internal messages
-- Dashboard alerts
-- External webhooks
-
-**Triggers:**
-- Record created
-- Record updated
-- Field changed
-- Approval status changed
-- Due date approaching
-- Exception conditions
-
-### Custom Workflow Actions
-See [workflows/custom-workflows.md](workflows/custom-workflows.md)
-
-**Workflow Action Scripts:**
-- Complex calculations
-- External API calls
-- Record transformations
-- Conditional logic
-- Data validation
-
-**Example - Custom Workflow Action:**
-```javascript
-/**
- * @NApiVersion 2.1
- * @NScriptType WorkflowActionScript
- */
-define(['N/record', 'N/https'], (record, https) => {
-
-    function onAction(scriptContext) {
-        const currentRecord = scriptContext.newRecord;
-        const orderId = currentRecord.id;
-        const customerEmail = currentRecord.getValue({ fieldId: 'email' });
-
-        // Call external API to send notification
-        const response = https.post({
-            url: 'https://api.notification-service.com/send',
-            headers: {
-                'Authorization': 'Bearer ' + getApiKey(),
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                to: customerEmail,
-                template: 'order_confirmation',
-                variables: {
-                    order_id: orderId,
-                    order_total: currentRecord.getValue({ fieldId: 'total' })
-                }
-            })
-        });
-
-        if (response.code === 200) {
-            return 'SUCCESS';
-        } else {
-            return 'FAILURE';
-        }
-    }
-
-    return { onAction };
-});
-```
-
-## Custom Records
-
-### Record Design
-See [custom-records/record-design.md](custom-records/record-design.md)
-
-**Design Considerations:**
-- Field types and constraints
-- Record relationships (parent-child, lookup)
-- Access controls
-- Forms and sublists
-- Search definitions
-
-**Common Custom Records:**
-- Project tracking
-- Contract management
-- Asset management
-- Commission calculations
-- Custom configuration
-
-### Relationship Management
-See [custom-records/relationship-management.md](custom-records/relationship-management.md)
-
-**Relationship Types:**
-- One-to-one (Customer → Primary Contact)
-- One-to-many (Order → Line Items)
-- Many-to-many (Products ↔ Categories)
-
-**Implementation:**
-- Custom record types
-- Custom fields for foreign keys
-- Saved searches for queries
-- User Events for referential integrity
-
-## Code Examples
-
-### Complete Finance Automation
-See [examples/finance-automation.md](examples/finance-automation.md)
-
-**Includes:**
-- Automated journal entries
-- Month-end close checklist
-- Accrual calculations
-- Financial reporting
-
-### Order-to-Cash Workflow
-See [examples/order-to-cash-workflow.md](examples/order-to-cash-workflow.md)
-
-**Includes:**
-- Sales order validation
-- Fulfillment automation
-- Auto-invoicing
-- Payment processing
-- Revenue recognition
-
-### Procure-to-Pay System
-See [examples/procure-to-pay-system.md](examples/procure-to-pay-system.md)
-
-**Includes:**
-- Requisition workflow
-- PO automation
-- 3-way matching
-- Payment processing
-- Reporting
+### Getting Started
+
+1. **Review SuiteScript Fundamentals**: See [/opt/ns/kb/suitescript-modules.md](/opt/ns/kb/suitescript-modules.md) for N/record, N/search, N/https APIs
+2. **Authentication**: See [/opt/ns/kb/authentication.md](/opt/ns/kb/authentication.md) for OAuth 2.0 setup
+3. **Deployment**: See [/opt/ns/kb/suitecloud-sdk-framework.md](/opt/ns/kb/suitecloud-sdk-framework.md) for SDF CLI tools
+
+### Common Automation Patterns
+
+| Business Process | Script Type | Typical Use Cases |
+|-----------------|-------------|-------------------|
+| **Finance** | User Event, Scheduled | Automated journal entries, accruals, reconciliation |
+| **Order-to-Cash** | User Event, Workflow | Order validation, pricing, fulfillment, invoicing |
+| **Procure-to-Pay** | User Event, Scheduled | PO automation, 3-way matching, payment processing |
+| **Workflows** | Workflow Actions | Approval routing, notifications, state management |
+| **Custom Records** | User Event, Client Script | Custom data models, business logic, validations |
+
+## Documentation Structure
+
+### Finance Automation
+- **[Journal Entries](finance/journal-entries.md)** - Automated JE creation, reversal, intercompany eliminations
+- **[Reconciliation](finance/reconciliation.md)** - Bank reconciliation, variance analysis, account monitoring
+- **[Period Close](finance/period-close.md)** - Month-end close automation, checklist management
+- **[Revenue Recognition](finance/revenue-recognition.md)** - ASC 606 compliance, deferred revenue, ratable recognition
+- **[Intercompany](finance/intercompany.md)** - Elimination entries, currency translation, transfer pricing
+
+### Order-to-Cash (O2C)
+- **[Sales Orders](order-to-cash/sales-orders.md)** - Order validation, pricing, credit checks, approval routing
+- **[Fulfillment](order-to-cash/fulfillment.md)** - Pick/pack/ship automation, carrier integration, tracking
+- **[Invoicing](order-to-cash/invoicing.md)** - Billing schedules, subscription billing, consolidated invoicing
+- **[Payments](order-to-cash/payments.md)** - Payment gateway integration, auto-application, credit memos
+- **[Revenue](order-to-cash/revenue.md)** - Revenue arrangement creation, performance obligations, recognition schedules
+
+### Procure-to-Pay (P2P)
+- **[Requisitions & POs](procure-to-pay/requisitions-pos.md)** - Approval workflows, auto-PO creation, budget checking
+- **[Receiving](procure-to-pay/receiving.md)** - Item receipts, quality inspection, inventory updates
+- **[Vendor Bills](procure-to-pay/vendor-bills.md)** - 3-way matching, approval routing, duplicate detection
+- **[Expense Reports](procure-to-pay/expense-reports.md)** - OCR integration, policy compliance, GL allocation
+- **[Payments](procure-to-pay/payments.md)** - Payment batches, ACH/wire file generation, 1099 tracking
+
+### Workflows
+- **[Approval Routing](workflows/approval-routing.md)** - Sequential, parallel, escalation patterns
+- **[Notification Automation](workflows/notification-automation.md)** - Email, webhooks, dashboard alerts
+- **[Custom Workflows](workflows/custom-workflows.md)** - Workflow action scripts, complex logic, external integrations
+- **[Custom Field Automation](workflows/custom-field-automation.md)** - Reading/writing custentity_*/custbody_* fields, defensive patterns, schema resilience
+
+### Custom Records
+- **[Record Design](custom/record-design.md)** - Field types, forms, sublists, search definitions
+- **[Relationship Management](custom/relationship-management.md)** - One-to-many, many-to-many patterns
+
+### Performance & Patterns
+- **[Large Volume Processing](patterns/large-volume.md)** - Map/Reduce scripts, batch processing, governance optimization
+
+## Complete Examples
+
+### End-to-End Implementations
+- **[Finance Automation](examples/finance-automation.md)** - Complete month-end close automation
+- **[Order-to-Cash Workflow](examples/order-to-cash-workflow.md)** - Sales order through revenue recognition
+- **[Procure-to-Pay System](examples/procure-to-pay-system.md)** - Requisition through payment processing
 
 ## Best Practices
 
+### Script Development
+- Use **isDynamic: false** for better performance in scheduled/batch scripts
+- Use **isDynamic: true** only when needed (client scripts, interactive UIs)
+- Always validate data before creating transactions
+- Implement comprehensive error handling and logging
+- Test extensively in sandbox before production deployment
+
 ### Transaction Automation
-- ✅ Validate before creating transactions
-- ✅ Log all automated transactions
-- ✅ Provide audit trails
-- ✅ Handle errors gracefully
-- ✅ Test in sandbox extensively
-- ❌ Don't skip validations
-- ❌ Don't create orphan records
-- ❌ Don't ignore governance limits
+- Validate before creating financial transactions
+- Maintain audit trails for all automated transactions
+- Handle errors gracefully with retry logic
+- Never skip approval workflows
+- Always balance debits and credits in journal entries
 
-### Financial Accuracy
-- ✅ Always balance debits and credits
-- ✅ Use proper accounting periods
-- ✅ Maintain referential integrity
-- ✅ Document business rules
-- ✅ Implement approval controls
-- ❌ Don't hard-code account IDs
-- ❌ Don't bypass approval workflows
-- ❌ Don't modify closed periods
+### Governance Management
+- Use **Map/Reduce** for processing >1000 records
+- Monitor governance usage (10,000 units per scheduled script)
+- Schedule intensive scripts during off-peak hours (2-6 AM Pacific)
+- Use **search.create()** instead of N/query for better governance
+- Cache frequently accessed data
 
-### Workflow Design
-- ✅ Keep workflows simple and linear
-- ✅ Provide clear error messages
-- ✅ Log all workflow actions
-- ✅ Test all approval paths
-- ✅ Document business logic
-- ❌ Don't create circular dependencies
-- ❌ Don't mix workflow types unnecessarily
-- ❌ Don't skip testing edge cases
-
-## Performance Optimization
-
-### Large Volume Processing
-See [patterns/large-volume.md](patterns/large-volume.md)
-
-**Strategies:**
-- Use Map/Reduce for > 1000 records
-- Batch operations in chunks
-- Schedule during off-peak hours
-- Monitor governance usage
-
-### Search Optimization
-- Use indexed fields in filters
-- Limit columns returned
-- Use summary searches when possible
-- Cache search results
-
-### Transaction Management
-- Use isDynamic: false for better performance
+### Performance Optimization
+- Use indexed fields in search filters
+- Limit columns returned in searches
+- Use **submitFields()** for simple field updates
 - Avoid unnecessary record loads
-- Use submitFields for simple updates
-- Batch related transactions
+- Batch related operations together
 
-## Compliance and Controls
+### Security & Compliance
+- Implement segregation of duties
+- Require approval workflows for financial transactions
+- Maintain comprehensive audit trails
+- Lock periods after close to prevent modifications
+- Follow SOX compliance requirements for change management
 
-### SOX Compliance
-- Segregation of duties
-- Approval workflows
-- Audit trails
-- Change management
-- Access controls
+## Related Skills
 
-### Financial Controls
-- Budget checking
-- Approval limits
-- Dual authorization
-- Reconciliation requirements
-- Period locking
+**[Vendor Cost Analytics](../vendor-cost-analytics/SKILL.md)** - Use for:
+- Duplicate vendor detection in procure-to-pay workflows
+- Vendor spend analysis for approval thresholds
+- Payment terms optimization
 
-## Reference Documentation
+## Additional Resources
 
-### Complete File Index
+### Local Knowledge Base
+All files located in `/opt/ns/kb/`:
+- **suitescript-modules.md** - Complete API reference for N/record, N/search, N/https, N/email, N/task
+- **authentication.md** - OAuth 2.0 implementation guide
+- **suitecloud-sdk-framework.md** - SDF CLI deployment workflows
+- **restlets.md** - Custom REST endpoint development
+- **suitetalk-rest-api.md** - Standard REST web services
 
-**Finance:**
-- [finance/journal-entries.md](finance/journal-entries.md)
-- [finance/reconciliation.md](finance/reconciliation.md)
-- [finance/period-close.md](finance/period-close.md)
-- [finance/revenue-recognition.md](finance/revenue-recognition.md)
-- [finance/intercompany.md](finance/intercompany.md)
+### Oracle NetSuite Documentation
+- **SuiteScript 2.x API**: https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/
+- **Help Center**: Setup > Company > Enable Features > SuiteCloud
+- **SuiteAnswers**: https://netsuite.custhelp.com/
 
-**Order-to-Cash:**
-- [order-to-cash/sales-orders.md](order-to-cash/sales-orders.md)
-- [order-to-cash/fulfillment.md](order-to-cash/fulfillment.md)
-- [order-to-cash/invoicing.md](order-to-cash/invoicing.md)
-- [order-to-cash/payments.md](order-to-cash/payments.md)
-- [order-to-cash/revenue.md](order-to-cash/revenue.md)
+## Script Type Selection Guide
 
-**Procure-to-Pay:**
-- [procure-to-pay/requisitions-pos.md](procure-to-pay/requisitions-pos.md)
-- [procure-to-pay/receiving.md](procure-to-pay/receiving.md)
-- [procure-to-pay/vendor-bills.md](procure-to-pay/vendor-bills.md)
-- [procure-to-pay/expense-reports.md](procure-to-pay/expense-reports.md)
-- [procure-to-pay/payments.md](procure-to-pay/payments.md)
+**User Event Scripts** - Trigger on record events (beforeLoad, beforeSubmit, afterSubmit)
+- Order validation, automatic field population, related record creation
+- Governance: 1,000 units
 
-**Workflows:**
-- [workflows/approval-routing.md](workflows/approval-routing.md)
-- [workflows/notification-automation.md](workflows/notification-automation.md)
-- [workflows/custom-workflows.md](workflows/custom-workflows.md)
+**Scheduled Scripts** - Run at scheduled intervals or on-demand
+- Batch processing, nightly jobs, data synchronization
+- Governance: 10,000 units
+- Schedule during off-peak hours
 
-**Custom Records:**
-- [custom-records/record-design.md](custom-records/record-design.md)
-- [custom-records/relationship-management.md](custom-records/relationship-management.md)
+**Map/Reduce Scripts** - Process large datasets with automatic parallelization
+- Processing >1000 records, complex aggregations, heavy computations
+- Governance: Auto-yielding with queue management
 
-**Examples:**
-- [examples/finance-automation.md](examples/finance-automation.md)
-- [examples/order-to-cash-workflow.md](examples/order-to-cash-workflow.md)
-- [examples/procure-to-pay-system.md](examples/procure-to-pay-system.md)
+**Workflow Action Scripts** - Custom actions within NetSuite workflows
+- Complex calculations, external API calls, conditional routing
+- Governance: 1,000 units
+
+**Client Scripts** - Run in user's browser
+- Real-time validation, field calculations, UI enhancements
+- No governance limits (runs client-side)
+
+**RESTlets** - Custom REST API endpoints
+- External integrations, mobile apps, third-party systems
+- Governance: 1,000 units per request
+
+## Deployment Workflow
+
+1. **Develop**: Write SuiteScript in IDE with SDF project structure
+2. **Test**: Deploy to sandbox, run unit tests, verify governance usage
+3. **Review**: Code review, check for governance issues, validate error handling
+4. **Deploy**: Use SDF CLI or SuiteCloud Extension to deploy to production
+5. **Monitor**: Track script execution logs, governance usage, error rates
+
+See [/opt/ns/kb/suitecloud-sdk-framework.md](/opt/ns/kb/suitecloud-sdk-framework.md) for detailed deployment instructions.
+
+---
+
+*For specific implementation details, navigate to the topic files listed above.*

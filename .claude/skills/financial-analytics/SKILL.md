@@ -7,6 +7,36 @@ description: Comprehensive financial data analysis including vendor spend, reven
 
 Comprehensive financial data analysis and reporting for enterprise applications.
 
+## Contents
+
+- [When to Use This Skill](#when-to-use-this-skill)
+- [Quick Start](#quick-start)
+- [Core Analytics Domains](#core-analytics-domains)
+  - [Vendor & Cost Analytics](#vendor--cost-analytics) - [reference/vendor-analytics.md](reference/vendor-analytics.md)
+  - [Revenue Analytics](#revenue-analytics) - [reference/revenue-analytics.md](reference/revenue-analytics.md)
+  - [Budget & Planning](#budget--planning) - [reference/budget-variance.md](reference/budget-variance.md)
+  - [Cash Flow Analysis](#cash-flow-analysis) - [reference/cash-flow.md](reference/cash-flow.md)
+  - [Financial Ratios](#financial-ratios) - [reference/financial-ratios.md](reference/financial-ratios.md)
+- [Time Series Analysis](#time-series-analysis)
+- [Forecasting Methods](#forecasting-methods) - [reference/forecasting.md](reference/forecasting.md)
+- [Financial Metrics & KPIs](#financial-metrics--kpis)
+- [Variance Analysis](#variance-analysis)
+- [Data Aggregation Patterns](#data-aggregation-patterns)
+- [Dashboard Design Patterns](#dashboard-design-patterns)
+- [Integration with ERP Systems](#integration-with-erp-systems)
+  - [NetSuite](#netsuite) - [integrations/netsuite.md](integrations/netsuite.md)
+  - [Salesforce](#salesforce) - [integrations/salesforce.md](integrations/salesforce.md)
+  - [Database Queries](#database-queries) - [integrations/databases.md](integrations/databases.md)
+- [Visualization Libraries](#visualization-libraries)
+- [Complete Examples](#complete-examples)
+  - [Cost Analysis CLI](#cost-analysis-cli) - [examples/cost-analysis-cli.md](examples/cost-analysis-cli.md)
+  - [Financial Dashboard](#financial-dashboard-application) - [examples/financial-dashboard.md](examples/financial-dashboard.md)
+- [Best Practices](#best-practices)
+- [Financial Reporting Standards](#financial-reporting-standards)
+- [Advanced Topics](#advanced-topics)
+  - [Scenario Analysis](#scenario-analysis) - [reference/scenario-analysis.md](reference/scenario-analysis.md)
+  - [Anomaly Detection](#anomaly-detection) - [reference/anomaly-detection.md](reference/anomaly-detection.md)
+
 ## When to Use This Skill
 
 Use this skill for:

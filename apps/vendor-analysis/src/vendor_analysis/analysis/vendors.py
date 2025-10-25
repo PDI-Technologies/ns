@@ -72,9 +72,7 @@ def analyze_vendor_spend(
             continue
 
         currency_series = group_df["currency"]
-        currency_value = (
-            currency_series.iloc[0] if not currency_series.isna().all() else None
-        )
+        currency_value = currency_series.iloc[0] if not currency_series.isna().all() else None
 
         summary = VendorSpendSummary(
             vendor_id=str(vendor_id_group),
@@ -165,9 +163,7 @@ def get_vendors_by_date_range(
             continue
 
         currency_series = group_df["currency"]
-        currency_value = (
-            currency_series.iloc[0] if not currency_series.isna().all() else None
-        )
+        currency_value = currency_series.iloc[0] if not currency_series.isna().all() else None
 
         summary = VendorSpendSummary(
             vendor_id=str(vendor_id),

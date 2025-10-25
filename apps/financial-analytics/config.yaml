@@ -1,0 +1,25 @@
+database:
+  host: localhost
+  port: 5432
+  name: financial_analytics
+
+netsuite:
+  account_id: "TSTDRV123456"
+  base_url: null
+
+salesforce:
+  enabled: true
+
+logging:
+  level: DEBUG
+  file_path: logs
+  archive_path: logs/archive
+  max_size_mb: 10
+
+analytics:
+  default_period_months: 12
+  vendor_analysis_top_n: 25
+  duplicate_threshold: 0.85
+  page_size: 100
+  max_retries: 3
+  retry_delay_seconds: 2
